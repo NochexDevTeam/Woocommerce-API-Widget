@@ -80,7 +80,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
 		}
 		$postvars = http_build_query($_POST);
 		$this->writeLog('APC===================='. $postvars,'debug');
-		$nochex_apc_url = "https://www.nochex.com/apcnet/apc.aspx";
+		$nochex_apc_url = "https://secure.nochex.com/apc/apc.aspx";
 		$params = array(
 			'body' => $postvars,
 			'sslverify' => true,
