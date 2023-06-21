@@ -34,7 +34,7 @@ it easy for your customers to use and for you to get paid, and we back that up w
 == Changelog ==
 
 = 3.1 =
-* Removed usued functions causing php errors.
+* Removed unused functions causing php errors.
 
 = 3 =
 * First Release.
