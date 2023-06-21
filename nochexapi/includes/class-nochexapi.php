@@ -135,11 +135,6 @@ class Nochexapi {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
-        // add cronjob action for dupe check
-		$this->loader->add_action( Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'dupe_payment_validation', $plugin_public, 'tp_payment_dupe_check' );
-		$this->loader->add_action( 'init', $plugin_public, 'tp_payment_dupe_check_cronstarter_activation' );
-		$this->loader->add_filter( 'cron_schedules', $plugin_public, 'tp_payment_dupe_check_cron_schedules_10min' );
-
 		$this->loader->add_filter( 'woocommerce_payment_gateways', $plugin_public, 'add_new_woocommerce_payment_gateways' );
         
         $this->loader->add_filter( 'sgo_js_minify_exclude', $plugin_public, 'exclude_from_siteground_script_minification' );
