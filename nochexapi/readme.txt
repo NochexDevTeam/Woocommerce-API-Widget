@@ -3,7 +3,7 @@ Contributors: Nochex
 Tags: WooCommerce, Credit Cards, Shopping Cart, Nochex Payment Gateway, Nochex, Extension, Gateway
 Requires at least: 3.3
 Tested up to: 6.2.2
-Stable tag: 4.3
+Stable tag: 3.1
 License: GPLv3 or later 
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -28,7 +28,10 @@ it easy for your customers to use and for you to get paid, and we back that up w
 * Customers are sent to the secure Nochex payments pages to make a payment.
 
 == Changelog ==
+= 3.1 =
 
-= 4 =
+- Removed unused function causing php errors
 
-- Added auto-update functionality
+= 3 =
+
+- Initial release
