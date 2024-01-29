@@ -19,28 +19,16 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         $this->method_title                      = Nochexapi_CONSTANTS::GATEWAY_TITLE;
         $this->method_description                = Nochexapi_CONSTANTS::GATEWAY_DESCRIPTION;
         $this->init_form_fields();
-        $this->init_settings();
+        $this->init_settings();		
         $this->title                             = $this->get_option( 'title' );
         $this->description                       = $this->get_option( 'description' );
-        $this->enabled                           = $this->get_option( 'enabled' );
-        $this->jsLogging                         = ($this->get_option( 'jsLogging' ) === 'yes' ? true : false);
-        $this->serversidedebug                   = ($this->get_option( 'serversidedebug' ) === 'yes' ? true : false);
-        $this->logLevels                         = $this->get_option( 'logLevels' );
-		$this->merchantId                        = $this->get_option( 'merchantId' );
-        $this->apikey                       	 = $this->get_option( 'apikey' );
-        $this->testMode                       	 = ($this->get_option( 'testMode' ) === 'yes' ? true : false);
-        //logFile location
-        $this->logPath                           = Nochexapi_CONSTANTS::getFilePaths( 'logs', 3, true );
-		//define callback url
-		$this->callback_url 					 = add_query_arg( 'wc-api', $this->id, home_url( '/' ) );
-		
+       		
         // Initialise settings
         //Load funcs
-        add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+        add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );		
 		
-		
-        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'gateway_cardsv2_e2e', array( $this, 'tpcp_gateway_cardsv2_e2e' ) );
-        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'gateway_cardsv2_cbk', array( $this, 'tpcp_gateway_cardsv2_cbk' ) );
+        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'nochex_gateway_e2e', array( $this, 'nochex_gateway_e2e' ) );
+        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'nochex_gateway_cbk', array( $this, 'nochex_gateway_cbk' ) );
 		
 		// APC Handler
 		add_action( 'woocommerce_api_' . $this->id, array( $this, 'apc' ) );
@@ -54,72 +42,14 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
 	 */
 	 
 	function apc() {
-	global $woocommerce;	
-	
-	if ( !empty($_POST['order_id'])) {
-		$this->writeLog('APC===================='. json_encode($_POST),'debug');
-		$order_id = sanitize_text_field($_POST['order_id']);
-		$order_id = esc_html($order_id);
-		$transaction_id = sanitize_text_field($_POST['transaction_id']);
-		$transaction_id = esc_html($transaction_id);
-		$transaction_date = sanitize_text_field($_POST['transaction_date']);
-		$transaction_date = esc_html($transaction_date);
-		$transaction_amount = sanitize_text_field($_POST['amount']);
-		$transaction_amount = esc_html($transaction_amount);
-		$apc_transaction_status = sanitize_text_field($_POST['status']);
-		$apc_transaction_status = esc_html($apc_transaction_status);
-		$apc_transaction_to = sanitize_text_field($_POST['to_email']);
-		$apc_transaction_to = esc_html($apc_transaction_to);
-		$apc_transaction_from = sanitize_text_field($_POST['from_email']);
-		$apc_transaction_from = esc_html($apc_transaction_from);
-		$order = new WC_Order ( $order_id );
-		if ( $order->get_total() != $transaction_amount ) {
-			// Put this order on-hold for manual checking
-			$order->update_status( $this->order_onhold_status, sprintf( __( 'Validation error: Nochex amounts do not match (total %s).', 'woocommerce' ), $transaction_amount ) );
-			return;
-		}
-		$postvars = http_build_query($_POST);
-		$this->writeLog('APC===================='. $postvars,'debug');
-		$nochex_apc_url = "https://secure.nochex.com/apc/apc.aspx";
-		$params = array(
-			'body' => $postvars,
-			'sslverify' => true,
-			'Content-Type'=> 'application/x-www-form-urlencoded',
-			'Content-Length'=> strlen($postvars),
-			'Host'=> 'www.nochex.com',
-			'user-agent'=> 'WooCommerce/' . $woocommerce->version
-		);
-		// Post back to get a response
-		$output = wp_remote_retrieve_body(wp_remote_post($nochex_apc_url, $params));
 		
-		$this->writeLog('APC===================='. $output,'debug');
-		// Debug - Features
-		$FormFields = 'Order Details: - APC Output: ' . $output;
-		$apcFieldsReturn = 'Transaction ID: ' . $transaction_id .', Transaction date: '.$transaction_date;
-		//Output Actions
-		if( $output == 'AUTHORISED' ) {
-			//Output Action - AUTHORISED 
-			// Notes for an Order - Output status (AUTHORISED / DECLINED), and Transaction Status (Test / Live)
-			$order->add_order_note( sprintf( __('Nochex APC Passed, Response: %s', 'wc_nochex' ), $output ) );
-			$order->add_order_note( sprintf( __('Nochex Payment Status: %s', 'wc_nochex' ), $apc_transaction_status ) );
-			$order->add_order_note( $apcFieldsReturn );
-			// APC Debug, Output and fields
-			$apcRequestPass =  'APC Passed, Response: ' . $output . ', ' . $apcFieldsReturn;
-			$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestPass . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-			$order->payment_complete();
-			$woocommerce->cart->empty_cart();
-		} else {
-			//Output Action - Declined
-			$apcRequestFail =  'APC Failed, Response: ' . $output . ', ' . $apcFieldsReturn;
-			// Notes for an Order - Output status (AUTHORISED / DECLINED), and Transaction Status (Test / Live)
-			$order->add_order_note( sprintf( __('Nochex APC Failed, Response: %s', 'wc_nochex' ), $output ) );
-			$order->add_order_note( sprintf( __('Nochex Payment Status: %s', 'wc_nochex' ), $apc_transaction_status ) );
-			// APC Debug, Output and fields
-			$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestFail . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-			$order->update_status( "", '' ,true );
+	global $woocommerce;
+
+		//$this->debug_log("APC - APC / Callback script to update orders - Begin");	
+	
+		if($_POST){
+			$this->apc = include dirname( __FILE__ ) . '/class-wc-nochex-apccallback.php';
 		}
-		exit;
-	} else wp_die( "Nochex APC Page - Request Failed" );
 	}
 
     
@@ -176,7 +106,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
     
     public function check_plugin(){
         //check for checkout page only.
-        if($this->enabled === 'yes'){
+        if(!empty($this->get_option( 'enabled' ))){
             return true;
         }
         return false;
@@ -237,7 +167,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
                 "checkoutUrl" => urlencode(wc_get_checkout_url()),
                 "pluginPrefix" => $prefix,
                 "pluginId" => Nochexapi_CONSTANTS::GATEWAY_ID,
-                "jsLogging" => $this->jsLogging,
+                "jsLogging" => ($this->get_option( 'jsLogging' ) === 'yes' ? true : false),
                 "pluginVer" => $ncx_pluginVer,
                 "adminUrl" => get_admin_url().'admin-ajax.php',
                 "assetsDir" => plugin_dir_url( dirname( __FILE__ ) ).'assets',
@@ -520,15 +450,16 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
             "amount" => $order_data['total'],
             "currency" => $order_data['currency'],
             "merchantTransactionId" => $order_data['id'],
+            "optional_2" => 'Enabled',
             "customer.merchantCustomerId" => $order_data['customer_id'],
             "order_key" => $order_data['order_key'],
             "customParameters[SHOPPER_cart_hash]" => $order_data['cart_hash'],
             "cardholder" => (string)(preg_replace('/[^a-z ]/i', '',$order_data['billing']['first_name']).' '. preg_replace('/[^a-z ]/i', '',$order_data['billing']['last_name'])),
             "customeremail" => sanitize_email($order_data['billing']['email']),
-            "merchantId" => $this->merchantId,
-            "apiKey" =>  $this->apikey,
-            "callbackurl" =>  $this->callback_url,
-            "testMode" =>  $this->testMode,
+            "merchantId" => $this->get_option( 'merchantId' ),
+            "apiKey" =>  $this->get_option( 'apikey' ),
+            "callbackurl" =>  add_query_arg( 'wc-api', $this->id, home_url( '/' ) ),
+            "testMode" =>  ($this->get_option( 'testMode' ) === 'yes' ? true : false),
         ];
         if(isset($order_data['billing']['phone'])){
             if(!empty($order_data['billing']['phone'])){
@@ -576,7 +507,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         $cartname = "";
         $order_id = (int)$order_id;
         $oObj = wc_get_order($order_id);
-        foreach($oObj->get_items(['line_item']) as $oItemId => $oItem){			
+        foreach($oObj->get_items('line_item') as $oItemId => $oItem){			
 			$cartname .= $oItem->get_name() . " - ". $oItem->get_quantity() . " x ". $oItem->get_total();
         }
         return $cartname;
