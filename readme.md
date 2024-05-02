@@ -24,6 +24,11 @@ Customers are sent to the secure Nochex payments pages to make a payment.
 
 == Changelog ==
 
+= 3.3 =
+
+- Updated APC Script
+- Removed / updated functions causing issues.
+  
 = 3.2 =
 
 - Updated APC / Callback Script
