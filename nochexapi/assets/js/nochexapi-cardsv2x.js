@@ -8,15 +8,6 @@
     var cardIframeID              = '';
     var nochexVals                = '';
 
-    /*function scroll_to_notices( scrollElement ) {
-        var offset = 300;
-        if ( scrollElement.length ) {
-            $( 'html, body' ).animate( {
-                scrollTop: ( 300 )
-            }, 1000 );
-        }
-    }*/
-
     function cardsv2Log(obj){
         if( parseInt( nochexapi.nochexapiCardVars.jsLogging ) === 1 ){
 	        var e = new Error(obj);
@@ -76,7 +67,6 @@
     function nochexapiSetFrameHeight(args){
         if(typeof args[0] === 'number'){
             if(args[0] > 0) {
-                //cardsv2Log(args[0] + 'px');
                 document.getElementById( cardIframeID ).style.height = args[0] + 'px';
             }
         }
@@ -92,7 +82,6 @@
             css: {
                 width:       '50%',
                 border:      'none',
-                //cursor:      'wait',
                 opacity:     1
             }
         });
@@ -147,33 +136,15 @@
                     $( '#' + cardIframeContainerID ).empty();
                     $( '#' + globalPrefix + 'checkout_id').val( response.data.uuid );
                     cardsv2Log('set the uuid to: ' + response.data.uuid);
-            /*        $( '#' + cardIframeContainerID ).html('<iframe id="' + cardIframeID + '" src="'+response.data.frameurl+'?v='+Date.now()+'" style="background:#eee;width: 100%; height:275px; border: none;transform: scale(0.9) !important;"></iframe>');*/
                 }
             }
         });
     }
-
-   /* nochexapi.initCheckoutIdOrder = function(){
-	    if($('iframe#' + cardIframeID).length === 0){
-            cardsv2Log('Checkout Iframe is initiated');
-            instantiateCheckoutIdOrder();
-        }
-    }*/
 	
 	function validationTrigger(){
-		//$('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
 		$('.validate-required input, .validate-required select').trigger('validate');
 		if($('.validate-required').length != $('.woocommerce-validated').length){
 			
-			/*var message = '<p style="color: red">Please check your: <ul>';
-			jQuery('.woocommerce-invalid-required-field').each(function(index, element){
-				var label = jQuery(this).contents().find("*input").attr('id');
-				label = label.replace(/_/g,' ');
-				label = label[0].toUpperCase() + label.slice(1);
-				message = message + '<li>' + label + '</li>';
-			});
-			message = message + '</ul>';
-			sessionStorage.setItem('errors', message);*/
 			return true;
 		}
 		return false;
@@ -188,22 +159,9 @@
         nochexapiCardsInProgress = false;
         cardsv2Log('start the post.');
         $('#place_order').after('<p id="nochexapiCardsBtnReplace" style="color:#CCC; text-align:center;">Processing, please wait...</p>');
-		
-		//$('#'+globalPrefix+'container').html('<iframe id="' + cardIframeID + '" src="'+response.frameurl+'" style="background:#eee;width: 100%; height:275px; border: none;transform: scale(0.9) !important;"></iframe>');
-		//<input type="button" value="Continue" id="ncx-show-checkout" class="btn btn-primary" style="">
 
         $('#place_order').hide();
 		
-		
-/*        if(validationTrigger() == true){
-			//alert('');
-			/*$('#nochexapiCardsBtnReplace').remove();
-			$('#place_order').show();
-			//$('body').trigger("update_checkout");
-			location.reload();
-			return;*
-			// causes error but shows validation message - // break;
-		}*/
 		$('body').trigger("update_checkout");
 		$('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
         $.ajax({
@@ -218,7 +176,7 @@
 				var nochexVals = new Array(); 
 				nochexVals = JSON.parse(response.popNCX);
 				
-				$('#ncx_form_container').html('<style>#ncx-email, #ncx-card_number, #ncx-expiry_month, #ncx-expiry_year, #ncx-cvv, #ncx-fullname, #ncx-address {outline: none !important; border: 1px solid #c9cedd !important; border-radius: 6px!important; background-color: #fff !important;} #ncx-address, #ncx-city, #ncx-postcode, #ncx-country {border: 0px solid transparent !important; background-color: #fff !important;} #ncx-email {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 34px auto !important; background-position: 1px -203px !important; background-repeat: no-repeat !important;} #ncx-card_number {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 1px -61px !important; background-repeat: no-repeat !important;} #ncx-expiry_month {background: url(https://secure.nochex.com/images/calendar.png) !important; background-size: 15px auto !important; background-position: 6px 11px !important; background-repeat: no-repeat !important;} #ncx-expiry_year {background: url(https://secure.nochex.com/images/calendar.png) !important; background-size: 15px auto !important; background-position: 6px 11px !important; background-repeat: no-repeat !important;} #ncx-cvv {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: -1px 3px !important; background-repeat: no-repeat !important;} #ncx-fullname {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 0px -127px !important; background-repeat: no-repeat !important;} #ncx-address {background: url(https://secure.nochex.com/images/Home.png) !important; background-size: 18px auto !important; background-position: 8px 8px !important; background-repeat: no-repeat !important;} #ncx-city {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 1px -159px !important; background-repeat: no-repeat !important;} #ncx-postcode {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 30px auto !important; background-position: 1px -241px !important; background-repeat: no-repeat !important;} #ncx-country {padding-left: 31px !important; margin-top: 3px; background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 2px -93px !important; background-repeat: no-repeat !important;} </style><input type="button" value="Continue" id="ncx-show-checkout" class="btn btn-primary" style="display:none"><script>var cell1 = document.getElementById("ncx_form_container");	var buttonnode= document.createElement("script"); 				buttonnode.setAttribute("id","ncxLib");				buttonnode.setAttribute("src","https://secure.nochex.com/exp/nochex_lib.js"); 				cell1.appendChild(buttonnode);								var formnode= document.createElement("form");				formnode.setAttribute("name","ncx-form"); 				formnode.setAttribute("id","nochexForm"); 				formnode.setAttribute("class","ncx-form");				 				var ncFm = document.createElement("script");				ncFm.setAttribute("id","ncx-config"); 				ncFm.setAttribute("ncxField-api_key","' + nochexVals.apiKey + '");			ncFm.setAttribute("NCXFIELD-MERCHANT_ID","' + nochexVals.merchantId + '");	ncFm.setAttribute("NCXFIELD-order_id", "' + nochexVals.merchantTransactionId +'"); 			ncFm.setAttribute("NCXFIELD-AMOUNT", "' + nochexVals.amount +'"); ncFm.setAttribute("ncxField-address","' + nochexVals.billingstreet1 + '"); ncFm.setAttribute("ncxField-city","' + nochexVals.billingcity + '"); ncFm.setAttribute("ncxField-postcode","' + nochexVals.billingpostcode + '");ncFm.setAttribute("ncxField-email","' + nochexVals.customeremail + '"); ncFm.setAttribute("ncxField-optional_2","Enabled"); ncFm.setAttribute("ncxField-fullname","' + nochexVals.cardholder + '"); ncFm.setAttribute("ncxField-phone","' + nochexVals.customermobile + '"); ncFm.setAttribute("ncxField-callback_url","' + nochexVals.callbackurl + '");ncFm.setAttribute("ncxField-success_url","' + response.pay_url + '");ncFm.setAttribute("ncxField-test_transaction","' + nochexVals.testMode + '"); ncFm.setAttribute("ncxField-autoredirect","True"); formnode.appendChild(ncFm);cell1.appendChild(formnode);setTimeout(function (){     document.getElementById("ncx-show-checkout").click();  OnScriptLoad(); }, 500); function OnScriptLoad(){ var att = document.createAttribute("onClick"); att.value = "location.reload();"; document.getElementById("ncx-exit-btn").setAttributeNode(att);    }</script>');
+				$('#ncx_form_container').html('<style>.ncx-parg{margin-bottom: 4px !important;} #ncx-email, #ncx-card_number, #ncx-expiry_month, #ncx-expiry_year, #ncx-cvv, #ncx-fullname, #ncx-address {outline: none !important; border: 1px solid #c9cedd !important; border-radius: 6px!important; background-color: #fff !important;} #ncx-address, #ncx-city, #ncx-postcode, #ncx-country {border: 0px solid transparent !important; background-color: #fff !important;} #ncx-email {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 34px auto !important; background-position: 1px -203px !important; background-repeat: no-repeat !important;} #ncx-card_number {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 1px -61px !important; background-repeat: no-repeat !important;} #ncx-expiry_month {background: url(https://secure.nochex.com/images/calendar.png) !important; background-size: 15px auto !important; background-position: 6px 11px !important; background-repeat: no-repeat !important;} #ncx-expiry_year {background: url(https://secure.nochex.com/images/calendar.png) !important; background-size: 15px auto !important; background-position: 6px 11px !important; background-repeat: no-repeat !important;} #ncx-cvv {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: -1px 3px !important; background-repeat: no-repeat !important;} #ncx-fullname {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 0px -127px !important; background-repeat: no-repeat !important;} #ncx-address {background: url(https://secure.nochex.com/images/Home.png) !important; background-size: 18px auto !important; background-position: 8px 8px !important; background-repeat: no-repeat !important;} #ncx-city {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 1px -159px !important; background-repeat: no-repeat !important;} #ncx-postcode {background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 30px auto !important; background-position: 1px -241px !important; background-repeat: no-repeat !important;} #ncx-country {padding-left: 31px !important; margin-top: 3px; background: url(https://secure.nochex.com/images/formIcons.png) !important; background-size: 32px auto !important; background-position: 2px -93px !important; background-repeat: no-repeat !important;} </style><input type="button" value="Continue" id="ncx-show-checkout" class="btn btn-primary" style="display:none"><script>var cell1 = document.getElementById("ncx_form_container");	var buttonnode= document.createElement("script"); 				buttonnode.setAttribute("id","ncxLib");				buttonnode.setAttribute("src","https://secure.nochex.com/exp/nochex_lib.js"); 				cell1.appendChild(buttonnode);								var formnode= document.createElement("form");				formnode.setAttribute("name","ncx-form"); 				formnode.setAttribute("id","nochexForm"); 				formnode.setAttribute("class","ncx-form");				 				var ncFm = document.createElement("script");				ncFm.setAttribute("id","ncx-config"); 				ncFm.setAttribute("ncxField-api_key","' + nochexVals.apiKey + '");			ncFm.setAttribute("NCXFIELD-MERCHANT_ID","' + nochexVals.merchantId + '");	ncFm.setAttribute("NCXFIELD-order_id", "' + nochexVals.merchantTransactionId +'"); 			ncFm.setAttribute("NCXFIELD-AMOUNT", "' + nochexVals.amount +'"); ncFm.setAttribute("ncxField-address","' + nochexVals.billingstreet1 + '"); ncFm.setAttribute("ncxField-city","' + nochexVals.billingcity + '"); ncFm.setAttribute("ncxField-postcode","' + nochexVals.billingpostcode + '");ncFm.setAttribute("ncxField-email","' + nochexVals.customeremail + '"); ncFm.setAttribute("ncxField-optional_2","Enabled"); ncFm.setAttribute("ncxField-fullname","' + nochexVals.cardholder + '"); ncFm.setAttribute("ncxField-phone","' + nochexVals.customermobile + '"); ncFm.setAttribute("ncxField-callback_url","' + nochexVals.callbackurl + '");ncFm.setAttribute("ncxField-success_url","' + response.pay_url + '");ncFm.setAttribute("ncxField-test_transaction","' + nochexVals.testMode + '"); ncFm.setAttribute("ncxField-autoredirect","True"); formnode.appendChild(ncFm);cell1.appendChild(formnode);setTimeout(function (){     document.getElementById("ncx-show-checkout").click();  OnScriptLoad(); }, 500); function OnScriptLoad(){try {setTimeout(document.getElementById("ncx-exit-btn").setAttribute("onClick", "location.reload();"), 0);} catch (error) {}}</script>');
 			} else {
 				
 				cardsv2Log(response.messages);
@@ -231,7 +189,6 @@
 				
 				var place_orderbtn = jQuery( '#place_order' );
 				place_orderbtn.on( 'click', wc_gateway_nochexapi.nochexapiCardsHandoff );
-				//return false;
 			}
 			
             },
@@ -244,7 +201,6 @@
     function validate_nochexapi_cardsv2_checkout(args){
         $('#nochexapi_cardsv2_container').empty();
         $('#place_order').after('<p id="nochexapiCardsBtnReplace" style="color:#CCC; text-align:center;">Processing, please wait...</p>');
-        //$('#place_order').hide();
         var generalAlertMsg     = 'Uncertain Response. Please report this to the merchant before reattempting payment. They will need to verify if this transaction is successful.';
         Promise.resolve(
             $.ajax({
@@ -292,15 +248,6 @@
     }
 
     nochexapi.nochexapiCardsHandoff = function() {
-	// onplaceorder click alert();
-		/*if(validationTrigger() == true){
-			console.log('test');/*break;*
-			$('body').trigger("checkout_error");
-			//jQuery('form.woocommerce-checkout').trigger("checkout_place_order");
-			return false;
-			
-		}*/
-		//alert("");
         if($('form.woocommerce-checkout').find('input[name^="payment_method"]:checked').val() !== nochexapi.nochexapiCardVars.pluginId){
             return;
         }
@@ -337,7 +284,4 @@ function getnochexapiGlobalVariable(){
 jQuery( function(){
     var nochexapiGlobalVars    = getnochexapiGlobalVariable();
     wc_gateway_nochexapi.init( nochexapiGlobalVars );
-    /*jQuery(document.body).on('updated_checkout', function() {
-        window.wc_gateway_nochexapi.initCheckoutIdOrder();
-    });*/
 });
