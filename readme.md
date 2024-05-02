@@ -4,7 +4,7 @@ Contributors: Nochex Tags: WooCommerce, Credit Cards, Shopping Cart, Nochex Paym
 
 Accept all major credit cards directly on your WooCommerce site using the Nochex payment gateway.
 
-WooCommerce Version Tested up to 8.5.2 and WordPress 6.4.2
+WooCommerce Version Tested up to 8.8.3 and WordPress 6.5.2
 
 == Description ==
 
