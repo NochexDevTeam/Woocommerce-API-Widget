@@ -4,7 +4,7 @@
 Plugin Name: Nochex API
 Plugin URI: https://ssl.nochex.com/Docs/shopping-cart-widget-guides/WooCommerce
 Description: Accept Payments in Woocommerce with Nochex API.
-Version: 3.2
+Version: 3.3
 Author: Nochex Ltd
 */
 
