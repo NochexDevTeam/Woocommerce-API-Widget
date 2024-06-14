@@ -2,7 +2,7 @@
 use Nochexapi\WC_Nochexapi_Constants AS Nochexapi_CONSTANTS; 
 return array(
     'general' => array(
-        'title' => 'Nochex API',
+        'title' => 'Nochex Widget',
         'description'=>'<p>General settings</p>',
         'fields'=> array(
             'enabled' => array(
