@@ -30,7 +30,7 @@ Customers are sent to the secure Nochex payments pages to make a payment.
 
 = 3.4 =
 
-- Minor update to remove unused functions and scripts, and tested up-to
+- Minor update to remove unused functions and scripts, and tested up-to latest version
 
 = 3.3 =
 
