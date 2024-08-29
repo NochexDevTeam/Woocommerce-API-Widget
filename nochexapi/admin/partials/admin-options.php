@@ -1,76 +1,3 @@
- <style type="text/css">
-/**
- * Checkbox Toggle UI
- */
-input[type="checkbox"].wppd-ui-toggle {
-    -webkit-appearance: none; 
-    -moz-appearance: none;
-    appearance: none;
-
-    -webkit-tap-highlight-color: transparent;
-
-    width: auto;
-    height: auto;
-    vertical-align: middle;
-    position: relative;
-    border: 0;
-    outline: 0;
-    cursor: pointer;
-    margin: 0 4px;
-    background: none;
-    box-shadow: none;
-}
-input[type="checkbox"].wppd-ui-toggle:focus {
-    box-shadow: none;
-}
-input[type="checkbox"].wppd-ui-toggle:after {
-    content: '';
-    font-size: 8px;
-    font-weight: 400;
-    line-height: 18px;
-    text-indent: -14px;
-    color: #ffffff;
-    width: 36px;
-    height: 18px;
-    display: inline-block;
-    background-color: #a7aaad;
-    border-radius: 72px;
-    box-shadow: 0 0 12px rgb(0 0 0 / 15%) inset;
-}
-input[type="checkbox"].wppd-ui-toggle:before {
-    content: '';
-    width: 14px;
-    height: 14px;
-    display: block;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    margin: 0;
-    border-radius: 50%;
-    background-color: #ffffff;
-}
-input[type="checkbox"].wppd-ui-toggle:checked:before {
-    left: 20px;
-    margin: 0;
-    background-color: #ffffff;
-}
-input[type="checkbox"].wppd-ui-toggle,
-input[type="checkbox"].wppd-ui-toggle:before,
-input[type="checkbox"].wppd-ui-toggle:after,
-input[type="checkbox"].wppd-ui-toggle:checked:before,
-input[type="checkbox"].wppd-ui-toggle:checked:after {
-    transition: ease .15s;
-}
-input[type="checkbox"].wppd-ui-toggle:checked:after {
-    content: 'ON';
-    background-color: #2271b1;
-}
-    table.wc_status_table tbody {font-weight:100!important; font-size: smaller;}
-    table.wc_status_table code {font-weight:100!important; font-size: smaller!important;}
-    table.wc_status_table tbody tr td {vertical-align: middle;}
-    table.wc_status_table tbody tr td button.tp-admin-ajax {font-size:unset;line-height:unset;padding:5px;}
-    td mark.warning {color: #ffaf20;}
-</style>
 <div>
     <?php
         $showSaveBtn=false;
@@ -164,9 +91,9 @@ input[type="checkbox"].wppd-ui-toggle:checked:after {
             echo '</div>'."\n";
         } else if($htmlBody==='showFaqs'){
             $faqs =  $this->getFAQsArray();
-        ?>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+        ?>	
+			<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
             <style>
 	        /* Custom style */
             .accordion-button::after {
@@ -207,7 +134,7 @@ input[type="checkbox"].wppd-ui-toggle:checked:after {
     <!--js-->
     <script type="text/javascript">
         jQuery(function(){
-            jQuery('body').on('click', '.tp-admin-ajax', function(e){
+            jQuery('body').on('click', '.ncx-ajax', function(e){
                 e.preventDefault();
                 var action = jQuery(this).data('pl_action');
                 return wp.ajax.post(action,{})

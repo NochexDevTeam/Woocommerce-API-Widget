@@ -356,8 +356,8 @@
         cardIframeID                = globalPrefix + 'cnpFrame';
         initWPWLOptions();
         cardsv2Log('checkout endpoint docReady!');
-        cardsv2Log(tpCardVars.pluginId + ' v.' + tpCardVars.pluginVer);
-        cardsv2Log(tpCardVars);
+        cardsv2Log(nxVars.pluginId + ' v.' + nxVars.pluginVer);
+        cardsv2Log(nxVars);
     }
 } )( window.wc_gateway_nochexapi = window.wc_gateway_nochexapi || {}, jQuery );
 

@@ -2,7 +2,7 @@
 use Nochexapi\WC_Nochexapi_Constants AS Nochexapi_CONSTANTS; 
 return array(
     'general' => array(
-        'title' => 'Nochex Widget',
+        'title' => 'Nochex API Widget',
         'description'=>'<p>General settings</p>',
         'fields'=> array(
             'enabled' => array(
@@ -34,7 +34,7 @@ return array(
                 'type' => 'text',
                 'class' => '',
                 'description' => 'This controls title text during checkout.',
-                'default' => 'Pay with card',
+                'default' => 'Pay with Credit / Debit Card',
                 'desc_tip' => true,
             ),
             'description' => array(
@@ -42,7 +42,7 @@ return array(
                 'type' => 'text',
                 'class' => '',
                 'description' => 'This controls the description seen at checkout.',
-                'default' => 'Checkout with Card',
+                'default' => 'Checkout with Credit / Debit Card',
                 'desc_tip' => true
             ),
             'testMode' => array(

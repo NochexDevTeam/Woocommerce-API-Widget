@@ -1,10 +1,10 @@
 <?php
 
 /*
-Plugin Name: Nochex API
-Plugin URI: https://ssl.nochex.com/Docs/shopping-cart-widget-guides/WooCommerce
-Description: Accept Payments in Woocommerce with Nochex API.
-Version: 3.3
+Plugin Name: Nochex API Widget
+Plugin URI: https://github.com/NochexDevTeam/Woocommerce-API-Widget
+Description: Accept all major credit / debit cards directly on your WooCommerce site using the Nochex API Widget.
+Version: 3.4
 Author: Nochex Ltd
 */
 
@@ -21,7 +21,6 @@ define( 'NOCHEXAPI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 //define( 'nochexapi_VERSION', '5.2.0' );
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-nochexapi-constants.php';
-
 
 /**
  * WooCommerce not activated admin notice
@@ -45,7 +44,7 @@ function nochexapi_install_wc_notice(){
  *
  * @since    5.2.0
  */
-function run_nochexapi() {
+function run_nochexwidget() {
 
 	$plugin = new nochexapi();
 	$plugin->run();
@@ -57,17 +56,57 @@ function run_nochexapi() {
  *
  * @since    5.2.0
  */
-function run_nochexapi_init(){
+function run_nochexwidget_init(){
 	if ( function_exists( 'WC' ) ) {
 		/**
          * The core plugin class that is used to define internationalization,
          * admin-specific hooks, and public-facing site hooks.
          */
         require plugin_dir_path( __FILE__ ) . 'includes/class-nochexapi.php';
-		run_nochexapi();
+		run_nochexwidget();
 	}
 	else{
-		add_action( 'admin_notices', 'nochexapi_install_wc_notice' );
+		add_action( 'admin_notices', 'nochex_install_wcAPI_notice' );
 	}
 }
-add_action('plugins_loaded','run_nochexapi_init');
+
+if ( function_exists( 'woocommerce_nochex_init' ) or function_exists( 'run_nochexapi' ) ) {	 
+	add_action( 'admin_notices', 'nochex_install_ncxAPI_notice' );	
+	add_action( 'admin_init', 'deactivate_apiplugin_now' );
+} else {
+	add_action('plugins_loaded','run_nochexwidget_init');
+}
+
+function deactivate_apiplugin_now() {
+    if ( is_plugin_active('NochexWidget/nochexapi.php') ) {
+        deactivate_plugins('NochexWidget/nochexapi.php');
+    }
+}
+
+
+/**
+ * WooCommerce not activated admin notice
+ *
+ * @since    5.2.0
+ */
+function nochex_install_wcAPI_notice(){
+	?>
+	<div class="error">
+		<p><?php _e( 'WooCommerce is Required', 'nochexapi' ); ?></p>
+	</div>
+	<?php
+}
+
+/**
+ * WooCommerce not activated admin notice
+ *
+ * @since    5.2.0
+ */
+function nochex_install_ncxAPI_notice(){
+	?>
+	<div class="error">
+		<p><?php _e( 'You can only have 1 Nochex integration on your website, please deactivate all other Nochex plugins first before enabling. If you are having integration issues we encourage you to contact us at support.nochex.com', 'nochexapi' ); ?></p>
+	</div>
+	<?php
+}
+

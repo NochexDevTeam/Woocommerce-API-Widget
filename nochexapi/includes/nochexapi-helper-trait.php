@@ -82,7 +82,7 @@ trait NochexapiHelperTrait{
     }
 
     public function get_wc_logfiles_content( $handler ){
-        return$log_files_path  = WC_Log_Handler_File::get_log_file_path( $handler );
+        return $log_files_path  = WC_Log_Handler_File::get_log_file_path( $handler );
         $content         = esc_html( file_get_contents( $log_files_path ) );
         return $content;
     }

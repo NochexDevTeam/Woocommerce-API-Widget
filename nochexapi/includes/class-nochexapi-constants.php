@@ -13,8 +13,8 @@ class WC_Nochexapi_Constants {
     const DEBUG                            = false;
     const GLOBAL_PREFIX                    = "nochexapi_";
     const GATEWAY_ID                       = "nochexapi";
-    const GATEWAY_TITLE                    = "Nochex API";
-    const GATEWAY_DESCRIPTION              = "Checkout with Credit/Debit Card.";
+    const GATEWAY_TITLE                    = "Nochex API Widget";
+    const GATEWAY_DESCRIPTION              = "Accept credit / debit cards directly on your WooCommerce site using the Nochex API Widget.";
 
     public static function getPluginFileData( $var ){
         $data  = get_plugin_data( self::getPluginRootPath() . "/nochexapi.php", false, false );

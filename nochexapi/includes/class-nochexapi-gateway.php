@@ -27,9 +27,6 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         //Load funcs
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );		
 		
-        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'nochex_gateway_e2e', array( $this, 'nochex_gateway_e2e' ) );
-        add_action( 'woocommerce_api_' . Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'nochex_gateway_cbk', array( $this, 'nochex_gateway_cbk' ) );
-		
 		// APC Handler
 		add_action( 'woocommerce_api_' . $this->id, array( $this, 'apc' ) );
     }
@@ -41,11 +38,8 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
 	 * @return void
 	 */
 	 
-	function apc() {
-		
-	global $woocommerce;
-
-		//$this->debug_log("APC - APC / Callback script to update orders - Begin");	
+	function apc() {		
+		global $woocommerce;
 	
 		if($_POST){
 			$this->apc = include dirname( __FILE__ ) . '/class-wc-nochex-apccallback.php';
@@ -93,12 +87,8 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
      * Function to initialization of gateway icons
      */
     public function get_icon() {
-        $icons_str = '';
-		
-        $icons_str .= '<img src="https://www.nochex.com/logobase-secure-images/logobase-banners/clear.png" class="nochexapi-payment-gateways-icon-img" alt="Nochexapi" style="width: 270px;max-width:inherit;max-height:inherit;height: auto;float:unset!important;padding-top: 0px;">'."\n";
-				
-				
-        return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
+        $icons_str = '<img src="https://www.nochex.com/logobase-secure-images/logobase-banners/clear.png" class="nochexapi-payment-gateways-icon-img" alt="Nochexapi" style="width: 270px;max-width:inherit;max-height:inherit;height: auto;float:unset!important;padding-top: 0px;">'."\n";
+	    return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
     }
     /*
      * Function to initialization of setting fields for different tabs
@@ -282,9 +272,6 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
             if(!isset($postArr['payment_method'])){
             $validation['errors'][] = 'payment_method is not set';
             } 
-            if(!isset($postArr['tp_payment_nonce'])){
-                $validation['errors'][] = 'tp_payment_nonce is not set';
-            }
             if(!isset($postArr['wp_http_referer'])){
                 $validation['errors'][] = 'wp_http_referer is not set';
             }
@@ -294,11 +281,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         }
         if(count($validation['errors']) > 0){
             return $validation;
-        }
-        if(!wp_verify_nonce($postArr['tp_payment_nonce'],'tp_payment_nonce')){
-            $validation['errors'][] = 'nonce validation failed';
-            return $validation;
-        }
+        }        
         if(isset($postArr['terms_field'])){
             if($postArr['terms_field'] === '1'){
                 if(!isset($postArr['terms'])){
@@ -519,11 +502,9 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
 		if($sess_order_id > 0){
 			$sess_order = $sess_order_id ? wc_get_order( $sess_order_id ) : false;
 			if($sess_order !== false){
-				if ( $sess_order->has_cart_hash( $sess_cart_hash ) && $sess_order->has_status( array( 'pending', 'failed' ) ) ) {
-					//wc_add_notice( 'good to go with matching cart hashes!' , 'success');
+				if ( $sess_order->has_cart_hash( $sess_cart_hash ) && $sess_order->has_status( array( 'pending', 'failed' ) ) ) { 
 				} else {
-					$sess_order->update_status( 'cancelled' , 'superseded by new order' );
-					//wc_add_notice( 'cancelling this order: ' . $sess_order_id , 'error');
+					$sess_order->update_status( 'cancelled' , 'superseded by new order' ); 
 				}
 			}
 		}

@@ -16,8 +16,6 @@ if ($_POST['order_id']) {
 	
 	if ( !empty($_POST['optional_2']) and $_POST['optional_2'] == "Enabled") {
 	
-	// $this->debug_log("Callback ----------"); 
-	
 		$transaction_amount = sanitize_text_field($_POST['amount']);
 		$transaction_amount = esc_html($transaction_amount);
 		$callback_transaction_status = sanitize_text_field($_POST['transaction_status']);
@@ -26,6 +24,7 @@ if ($_POST['order_id']) {
 		$callback_transaction_to = esc_html($callback_transaction_to);
 		$callback_transaction_from = sanitize_text_field($_POST['email_address']);
 		$callback_transaction_from = esc_html($callback_transaction_from);
+		
 		$order = new WC_Order($order_id);
 		
 		if ($order->get_status() != $this->order_complete_status){
@@ -67,7 +66,6 @@ if ($_POST['order_id']) {
 			// APC Debug, Output and fields
 			$apcRequestPass =  'Callback Passed, Response: ' . $output . ', ' . $apcFieldsReturn;
 			$FormFields = 'Order Details: - CALLBACK AUTHORISED: ' . $apcRequestPass . ", Order Note 1: Nochex CALLBACK Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $status;
-			// $this->debug_log($FormFields);
 			$order->payment_complete();
 			$woocommerce->cart->empty_cart();
 		} else {
@@ -81,14 +79,11 @@ if ($_POST['order_id']) {
 			$order->add_order_note( $callbackNotes);
 			// APC Debug, Output and fields
 			$FormFields = 'Order Details: - CALLBACK AUTHORISED: ' . $apcRequestFail . ", Order Note 1: Nochex CALLBACK Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $status;
-			// $this->debug_log($FormFields);
 		}
 		exit;
 		
 		}
 		} else {
-	
-	// $this->debug_log("APC ----------"); 
 			$transaction_amount = sanitize_text_field($_POST['amount']);
 			$transaction_amount = esc_html($transaction_amount);
 			$apc_transaction_status = sanitize_text_field($_POST['status']);
@@ -108,8 +103,6 @@ if ($_POST['order_id']) {
 			}
 			$postvars = http_build_query($_POST);
 			$nochex_apc_url = "https://secure.nochex.com/apc/apc.aspx";
-			/*$nochex_apc_url = "https://www.nochex.com/apcnet/apc.aspx";
-			$nochex_apc_url = "https://www.nochex.com/nochex.dll/apc/apc";*/
 			
 			$params = array(
 				'body' => $postvars,
@@ -135,7 +128,6 @@ if ($_POST['order_id']) {
 				// APC Debug, Output and fields
 				$apcRequestPass =  'APC Passed, Response: ' . $output . ', ' . $apcFieldsReturn;
 				$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestPass . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-				// $this->debug_log($FormFields);
 				$order->payment_complete();				
 				$woocommerce->cart->empty_cart();
 			} else {
@@ -146,7 +138,6 @@ if ($_POST['order_id']) {
 				$order->add_order_note( sprintf( __('Nochex Payment Status: %s', 'wc_nochex' ), $apc_transaction_status ) );
 				// APC Debug, Output and fields
 				$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestFail . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-				// $this->debug_log($FormFields);
 				$order->update_status( $this->settings['order_failed_status'], '' ,true );
 			}
 		exit;

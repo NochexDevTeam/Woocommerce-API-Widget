@@ -1,6 +1,5 @@
 <?php
  
-
 use Nochexapi\WC_Nochexapi_Constants AS NOCHEXAPI;
 use WC_Payment_Gateway_Nochexapi AS NochexAPI_Cards;
 
@@ -46,13 +45,8 @@ class Nochexapi_Public {
 
 		/**
 		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Totalprocessing_Card_Payments_And_Gateway_Woocommerce_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Totalprocessing_Card_Payments_And_Gateway_Woocommerce_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
+		 * An instance of this class should be passed to the run() function 
+		 * 
 		 */
 
 		wp_enqueue_style( 
@@ -75,12 +69,7 @@ class Nochexapi_Public {
 		/**
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Totalprocessing_Card_Payments_And_Gateway_Woocommerce_Loader as all of the hooks are defined
-		 * in that particular class.
 		 *
-		 * The Totalprocessing_Card_Payments_And_Gateway_Woocommerce_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
 		 */
 
 		wp_enqueue_script( $this->plugin_name, 
@@ -105,7 +94,7 @@ class Nochexapi_Public {
 	}
     
     public function exclude_from_siteground_script_minification( $exclude_list ){
-        $exclude_list[] = NOCHEXAPI::GLOBAL_PREFIX . 'tp_cards';
+        $exclude_list[] = NOCHEXAPI::GLOBAL_PREFIX . '_cards';
         return $exclude_list;
     }
 }

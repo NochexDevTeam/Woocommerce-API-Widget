@@ -47,7 +47,6 @@ class Nochexapi {
 		$this->plugin_name = 'nochexapi';
 
 		$this->load_dependencies();
-		//$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 
@@ -59,7 +58,6 @@ class Nochexapi {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Nochexapi_Loader. Orchestrates the hooks of the plugin.
-	 * - Nochexapi_i18n. Defines internationalization functionality.
 	 * - Nochexapi_Admin. Defines all hooks for the admin area.
 	 * - Nochexapi_Public. Defines all hooks for the public side of the site.
 	 *
@@ -70,39 +68,26 @@ class Nochexapi {
 	 * @access   private
 	 */
 	private function load_dependencies() {
-
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-nochexapi-loader.php';
-
 		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		//require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-nochexapi-i18n.php';
-
-		/**
-		 * The class payment gateway totalprocessing
+		 * The class payment gateway
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-nochexapi-old-version-helper.php';
-
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-nochexapi-gateway.php';
-
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-nochexapi-admin.php';
-
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-nochexapi-public.php';
-
 		$this->loader = new Nochexapi_Loader();
-
 	}
 
 	/**
@@ -113,12 +98,10 @@ class Nochexapi {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
-
 		$plugin_admin = new Nochexapi_Admin( $this->get_plugin_name(), $this->get_version() );
-
+		
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
 	} 
 
 	/**
@@ -139,7 +122,7 @@ class Nochexapi {
         
         $this->loader->add_filter( 'sgo_js_minify_exclude', $plugin_public, 'exclude_from_siteground_script_minification' );
 
-        $NochexapiObj      = new WC_Payment_Gateway_Nochexapi();
+        $NochexapiObj = new WC_Payment_Gateway_Nochexapi();
         $NochexapiObj->run( Nochexapi_CONSTANTS::getPluginRootPath() );
 	}
 
