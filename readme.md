@@ -26,6 +26,11 @@ Automatically Update Orders - Use APC (Automatic Payment Confirmation) to update
 Mobile Payments - Mobile friendly interface for customers.
 Customers are sent to the secure Nochex payments pages to make a payment.
 
+=== Nochex Script Monitor ===
+To help improve the security and visibility of your WordPRess site, we recommend using our Nochex Script Monitor - https://github.com/NochexDevTeam/Nochex-Script-Monitor 
+
+This lightweight tool keeps an eye on your site's scripts - whether inline, external, or dynamically generated and alerts you to any changes. It's a simple way to stay informed about what is running behind the scenes, and helping you to spot any potential issues early without needing too deep technical knowledge but advise to consult with your developer for assistance.
+
 == Changelog ==
 
 = 3.4 =
@@ -49,3 +54,4 @@ Customers are sent to the secure Nochex payments pages to make a payment.
 = 3 =
 
 - First Release.
+
