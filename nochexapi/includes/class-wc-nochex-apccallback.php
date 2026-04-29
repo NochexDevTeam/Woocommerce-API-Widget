@@ -5,33 +5,51 @@
 */
 
 defined( 'ABSPATH' ) || exit;
+global $woocommerce;
+$wc_version = ( is_object( $woocommerce ) && isset( $woocommerce->version ) ) ? (string) $woocommerce->version : 'unknown';
 
-if ($_POST['order_id']) {
-	$order_id = sanitize_text_field($_POST['order_id']);
+if ( isset( $_POST['order_id'] ) && ! empty( $_POST['order_id'] ) ) {
+	$order_complete_status = 'processing';
+	$order_onhold_status = 'on-hold';
+	$order_failed_status = 'failed';
+	if ( isset( $this->settings['order_complete_status'] ) && ! empty( $this->settings['order_complete_status'] ) ) {
+		$order_complete_status = $this->settings['order_complete_status'];
+	}
+	if ( isset( $this->settings['order_onhold_status'] ) && ! empty( $this->settings['order_onhold_status'] ) ) {
+		$order_onhold_status = $this->settings['order_onhold_status'];
+	}
+	if ( isset( $this->settings['order_failed_status'] ) && ! empty( $this->settings['order_failed_status'] ) ) {
+		$order_failed_status = $this->settings['order_failed_status'];
+	}
+
+	$order_id = sanitize_text_field( wp_unslash( $_POST['order_id'] ) );
 	$order_id = esc_html($order_id);
-	$transaction_id = sanitize_text_field($_POST['transaction_id']);
+	$transaction_id = sanitize_text_field( wp_unslash( $_POST['transaction_id'] ?? '' ) );
 	$transaction_id = esc_html($transaction_id);
-	$transaction_date = sanitize_text_field($_POST['transaction_date']);
+	$transaction_date = sanitize_text_field( wp_unslash( $_POST['transaction_date'] ?? '' ) );
 	$transaction_date = esc_html($transaction_date);
 	
-	if ( !empty($_POST['optional_2']) and $_POST['optional_2'] == "Enabled") {
+	if ( ! empty( $_POST['optional_2'] ) && 'Enabled' === sanitize_text_field( wp_unslash( $_POST['optional_2'] ) ) ) {
 	
-		$transaction_amount = sanitize_text_field($_POST['amount']);
+		$transaction_amount = sanitize_text_field( wp_unslash( $_POST['amount'] ?? '' ) );
 		$transaction_amount = esc_html($transaction_amount);
-		$callback_transaction_status = sanitize_text_field($_POST['transaction_status']);
+		$callback_transaction_status = sanitize_text_field( wp_unslash( $_POST['transaction_status'] ?? '' ) );
 		$callback_transaction_status = esc_html($callback_transaction_status);
-		$callback_transaction_to = sanitize_text_field($_POST['merchant_id']);
+		$callback_transaction_to = sanitize_text_field( wp_unslash( $_POST['merchant_id'] ?? '' ) );
 		$callback_transaction_to = esc_html($callback_transaction_to);
-		$callback_transaction_from = sanitize_text_field($_POST['email_address']);
+		$callback_transaction_from = sanitize_text_field( wp_unslash( $_POST['email_address'] ?? '' ) );
 		$callback_transaction_from = esc_html($callback_transaction_from);
 		
-		$order = new WC_Order($order_id);
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			wp_die( 'Nochex APC Page - Invalid order' );
+		}
 		
-		if ($order->get_status() != $this->order_complete_status){
+		if ( $order->get_status() != $order_complete_status ) {
 		
 		if ( $order->get_total() != $transaction_amount ) {
 			// Put this order on-hold for manual checking
-			$order->update_status( $this->settings['order_onhold_status'], sprintf( __( 'Validation error: Nochex amounts do not match (total %s).', 'woocommerce' ), $transaction_amount ) );
+			$order->update_status( $order_onhold_status, sprintf( __( 'Validation error: Nochex amounts do not match (total %s).', 'woocommerce' ), $transaction_amount ) );
 			return;
 		}
 		$postvars = http_build_query($_POST);
@@ -42,10 +60,11 @@ if ($_POST['order_id']) {
 			'Content-Type'=> 'application/x-www-form-urlencoded',
 			'Content-Length'=> strlen($postvars),
 			'Host'=> 'www.nochex.com',
-			'user-agent'=> 'WooCommerce/' . $woocommerce->version
+			'user-agent'=> 'WooCommerce/' . $wc_version
 		);
 		// Post back to get a response
-		$output = wp_remote_retrieve_body(wp_remote_post($nochex_apc_url, $params));
+		$response = wp_remote_post( $nochex_apc_url, $params );
+		$output = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 		// Debug - Features
 		$FormFields = 'Order Details: - APC Output: ' . $output;
 		// $this->debug_log($FormFields);
@@ -67,7 +86,9 @@ if ($_POST['order_id']) {
 			$apcRequestPass =  'Callback Passed, Response: ' . $output . ', ' . $apcFieldsReturn;
 			$FormFields = 'Order Details: - CALLBACK AUTHORISED: ' . $apcRequestPass . ", Order Note 1: Nochex CALLBACK Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $status;
 			$order->payment_complete();
-			$woocommerce->cart->empty_cart();
+			if ( is_object( $woocommerce ) && isset( $woocommerce->cart ) && is_object( $woocommerce->cart ) ) {
+				$woocommerce->cart->empty_cart();
+			}
 		} else {
 			//Output Action - Declined
 			$apcRequestFail =  'Callback Failed, Response: ' . $output . ', ' . $apcFieldsReturn;
@@ -84,21 +105,24 @@ if ($_POST['order_id']) {
 		
 		}
 		} else {
-			$transaction_amount = sanitize_text_field($_POST['amount']);
+			$transaction_amount = sanitize_text_field( wp_unslash( $_POST['amount'] ?? '' ) );
 			$transaction_amount = esc_html($transaction_amount);
-			$apc_transaction_status = sanitize_text_field($_POST['status']);
+			$apc_transaction_status = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
 			$apc_transaction_status = esc_html($apc_transaction_status);
-			$apc_transaction_to = sanitize_text_field($_POST['to_email']);
+			$apc_transaction_to = sanitize_text_field( wp_unslash( $_POST['to_email'] ?? '' ) );
 			$apc_transaction_to = esc_html($apc_transaction_to);
-			$apc_transaction_from = sanitize_text_field($_POST['from_email']);
+			$apc_transaction_from = sanitize_text_field( wp_unslash( $_POST['from_email'] ?? '' ) );
 			$apc_transaction_from = esc_html($apc_transaction_from);
-			$order = new WC_Order ( $order_id );
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				wp_die( 'Nochex APC Page - Invalid order' );
+			}
 			
-			if ($order->get_status() != $this->settings['order_complete_status']){
+			if ($order->get_status() != $order_complete_status){
 			
 			if ( $order->get_total() != $transaction_amount ) {
 				// Put this order on-hold for manual checking
-				$order->update_status( $this->settings['order_onhold_status'], sprintf( __( 'Validation error: Nochex amounts do not match (total %s).', 'woocommerce' ), $transaction_amount ) );
+				$order->update_status( $order_onhold_status, sprintf( __( 'Validation error: Nochex amounts do not match (total %s).', 'woocommerce' ), $transaction_amount ) );
 				return;
 			}
 			$postvars = http_build_query($_POST);
@@ -110,17 +134,18 @@ if ($_POST['order_id']) {
 				'Content-Type'=> 'application/x-www-form-urlencoded',
 				'Content-Length'=> strlen($postvars),
 				'Host'=> 'secure.nochex.com',
-				'user-agent'=> 'WooCommerce/' . $woocommerce->version
+				'user-agent'=> 'WooCommerce/' . $wc_version
 			);
 			// Post back to get a response
-			$output = wp_remote_retrieve_body(wp_remote_post($nochex_apc_url, $params));
+			$response = wp_remote_post( $nochex_apc_url, $params );
+			$output = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 			// Debug - Features
 			$FormFields = 'Order Details: - APC Output: ' . $output;
 			// $this->debug_log($FormFields);
 			$apcFieldsReturn = 'APC Fields: to_email: ' . $apc_transaction_to . ', from_email: ' .$apc_transaction_from .', transaction_id: ' . $transaction_id .', transaction_date: '.$transaction_date. ', order_id: ' .$order_id . ', amount: ' .$transaction_amount. ', status: ' . $apc_transaction_status;
 			
 			//Output Actions
-			if( strstr($output, 'AUTHORISED') !== false ) {
+			if( strstr((string) $output, 'AUTHORISED') !== false ) {
 				//Output Action - AUTHORISED 
 				// Notes for an Order - Output status (AUTHORISED / DECLINED), and Transaction Status (Test / Live)
 				$order->add_order_note( sprintf( __('Nochex APC Passed, Response: %s', 'wc_nochex' ), $output ) );
@@ -128,8 +153,10 @@ if ($_POST['order_id']) {
 				// APC Debug, Output and fields
 				$apcRequestPass =  'APC Passed, Response: ' . $output . ', ' . $apcFieldsReturn;
 				$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestPass . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-				$order->payment_complete();				
-				$woocommerce->cart->empty_cart();
+				$order->payment_complete();
+				if ( is_object( $woocommerce ) && isset( $woocommerce->cart ) && is_object( $woocommerce->cart ) ) {
+					$woocommerce->cart->empty_cart();
+				}
 			} else {
 				//Output Action - Declined
 				$apcRequestFail =  'APC Failed, Response: ' . $output . ', ' . $apcFieldsReturn;
@@ -138,7 +165,7 @@ if ($_POST['order_id']) {
 				$order->add_order_note( sprintf( __('Nochex Payment Status: %s', 'wc_nochex' ), $apc_transaction_status ) );
 				// APC Debug, Output and fields
 				$FormFields = 'Order Details: - APC AUTHORISED: ' . $apcRequestFail . ", Order Note 1: Nochex APC Passed, Response: " . $output . ", Order Note 2: Nochex Payment Status:" . $apc_transaction_status;
-				$order->update_status( $this->settings['order_failed_status'], '' ,true );
+				$order->update_status( $order_failed_status, '' ,true );
 			}
 		exit;
 		

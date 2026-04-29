@@ -4,7 +4,7 @@
 Plugin Name: Nochex API Widget
 Plugin URI: https://github.com/NochexDevTeam/Woocommerce-API-Widget
 Description: Accept all major credit / debit cards directly on your WooCommerce site using the Nochex API Widget.
-Version: 3.4
+Version: 4
 Author: Nochex Ltd
 */
 
@@ -76,6 +76,25 @@ if ( function_exists( 'woocommerce_nochex_init' ) or function_exists( 'run_noche
 } else {
 	add_action('plugins_loaded','run_nochexwidget_init');
 }
+
+add_action(
+	'woocommerce_blocks_loaded',
+	function () {
+		if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+			return;
+		}
+
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-nochexapi-gateway.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-nochexapi-blocks.php';
+
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function ( $registry ) {
+				$registry->register( new WC_Nochexapi_Blocks() );
+			}
+		);
+	}
+);
 
 function deactivate_apiplugin_now() {
     if ( is_plugin_active('NochexWidget/nochexapi.php') ) {

@@ -10,6 +10,32 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/nochexapi-helper
 
 class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
     use NochexapiHelperTrait;
+    
+    /**
+     * Ensure payment responses are scalar-only to avoid Store API warnings.
+     *
+     * @param array $response Gateway response payload.
+     * @return array
+     */
+    private function normalize_payment_response( $response ) {
+        if ( ! is_array( $response ) ) {
+            return [ 'result' => 'failure' ];
+        }
+
+        foreach ( $response as $key => $value ) {
+            if ( is_array( $value ) || is_object( $value ) ) {
+                $response[ $key ] = wp_json_encode( $value );
+            } else if ( null === $value ) {
+                $response[ $key ] = '';
+            }
+        }
+
+        if ( ! isset( $response['result'] ) || ! in_array( $response['result'], [ 'success', 'failure' ], true ) ) {
+            $response['result'] = 'failure';
+        }
+
+        return $response;
+    }
 
     public function __construct() {
 
@@ -336,9 +362,9 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
     
     public function orderStatusHandler($status,$order){
         $array=[
-            'pending'    => ['result'=>'success', 'redirect' => false, 'refresh' => false, 'reload' => false, 'pending'=>true, 'process' => ["order"=>true]],
-            'cancelled'  => ['result'=>'failure', 'redirect' => false, 'refresh' => false, 'reload' => false, 'messages' => ['error' => ['This order has been cancelled. Please retry your order.']]],
-            'failed'     => ['result'=>'failure', 'redirect' => false, 'refresh' => false, 'reload' => true, 'messages' => ['error' => ['There was a problem creating your order, please try again.']]],
+            'pending'    => ['result'=>'success', 'redirect' => false, 'refresh' => false, 'reload' => false, 'pending'=>true],
+            'cancelled'  => ['result'=>'failure', 'redirect' => false, 'refresh' => false, 'reload' => false, 'message' => 'This order has been cancelled. Please retry your order.'],
+            'failed'     => ['result'=>'failure', 'redirect' => false, 'refresh' => false, 'reload' => true, 'message' => 'There was a problem creating your order, please try again.'],
         ];
         if(array_key_exists($status, $array)){
             return $array[$status];
@@ -352,41 +378,43 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         $this->writeLog($_POST,'debug');
         
         $order = wc_get_order($order_id);
+        if ( ! $order ) {
+            $this->writeLog('-----------process_payment Order does not exists-----------', 'debug');
+            wc_add_notice('There was a problem creating your order, please try again.', 'error');
+            return ['result' => 'failure', 'redirect' => false, 'message' => 'There was a problem creating your order, please try again.'];
+        }
         $order_data = $order->get_data();
 		
         $handler = $this->orderStatusHandler($order_data['status'],$order);
-        //check the order_id exists.
-        if($order===false){
-            $this->writeLog('-----------process_payment Order does not exists-----------', 'debug');
-            wc_add_notice('There was a problem creating your order, please try again.', 'error');
-			$handler['result'] = "failed";
-            
-            return $handler;
-        }
 		
 		//print_r($order_data['billing']);
 		if(empty($order_data['billing']['phone'])){
 			wc_add_notice('There was a problem creating your order, please try again.', 'error');
-			$handler['messages'] =  'There was a problem creating your order, please try again.';
-			$handler['result'] = "failed";
+			$handler['message'] =  'There was a problem creating your order, please try again.';
+			$handler['result'] = "failure";
             $this->writeLog('-----------phone bill------------','debug');
-            return $handler;
+            return $this->normalize_payment_response( $handler );
 		}
 		
         //reject the failed, cancelled on-hold & success
         if(!isset($handler['pending'])){
-            if(isset($handler['messages'])){
-                $this->writeLog('-----------process_payment pending order has message issue------------','debug');
-                $this->writeLog($handler['messages'],'warning');
+            if(isset($handler['message']) && is_string($handler['message'])){
+                wc_add_notice($handler['message'], 'error');
+            } else if(isset($handler['messages']) && is_array($handler['messages'])){
+                // Backward compatibility for older message structure.
                 foreach($handler['messages'] as $noticeType => $noticeItems){
-                    foreach($noticeItems as $notice){
-                        wc_add_notice($notice, $noticeType);
+                    if(is_array($noticeItems)){
+                        foreach($noticeItems as $notice){
+                            wc_add_notice((string)$notice, (string)$noticeType);
+                        }
+                    } else if(is_string($noticeItems)){
+                        wc_add_notice($noticeItems, (string)$noticeType);
                     }
                 }
             }
             $this->writeLog('-----------process_payment if pending order does not have message----------','debug');
             $this->writeLog($handler,'warning');
-            return $handler;
+            return $this->normalize_payment_response( $handler );
         }
         //pending orders!
         
@@ -396,14 +424,13 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         $this->writeLog($additionalParams,'debug');
 
         //check for RG slick
-        $handler['fullPost'] = $_POST;
         $updateCheckout = false;
         $checkoutId = false;
         $checkoutCode = '';
         $checkoutJson = '{}';
         if(isset($_POST[ Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'checkout_id' ])){
             if(!empty($_POST[ Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'checkout_id' ])){
-                $checkoutId = sanitize_text_field($_POST[ Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'checkout_id' ]);
+                $checkoutId = sanitize_text_field( wp_unslash( $_POST[ Nochexapi_CONSTANTS::GLOBAL_PREFIX . 'checkout_id' ] ) );
                 $updateCheckout = true;
             }
         }
@@ -423,7 +450,7 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         
         $this->writeLog($handler,'debug');
         
-        return $handler;
+        return $this->normalize_payment_response( $handler );
     }
 
     public function prepareOrderDataForPayload($order_data,$additionalParams = []){
@@ -490,6 +517,9 @@ class WC_Payment_Gateway_Nochexapi extends WC_Payment_Gateway {
         $cartname = "";
         $order_id = (int)$order_id;
         $oObj = wc_get_order($order_id);
+        if ( ! $oObj ) {
+            return $cartname;
+        }
         foreach($oObj->get_items('line_item') as $oItemId => $oItem){			
 			$cartname .= $oItem->get_name() . " - ". $oItem->get_quantity() . " x ". $oItem->get_total();
         }
